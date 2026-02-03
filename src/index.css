@@ -1,0 +1,59 @@
+@import "tailwindcss";
+@source "../index.html";
+@source "./**/*.{js,jsx}";
+
+/* Custom Theme for ECELL Quiz - Luxury Gold + Black */
+@theme {
+  --color-gold-light: #FFD700;
+  --color-gold: #D4AF37;
+  --color-gold-dark: #AA8C2C;
+  --color-black-rich: #0a0a0a;
+  --color-black-soft: #1a1a1a;
+
+  --font-family-display: 'Playfair Display', serif;
+}
+
+/* Base Styles */
+body {
+  background-color: #000000;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+/* Utility Classes */
+.text-gold-gradient {
+  background: linear-gradient(to right, #D4AF37, #FFD700);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.border-gold-glow {
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+  border: 1px solid #D4AF37;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #D4AF37;
+  border-radius: 9999px;
+}
