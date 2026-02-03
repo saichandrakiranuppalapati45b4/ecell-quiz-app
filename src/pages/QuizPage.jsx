@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import Confetti from 'react-confetti';
 import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -37,6 +38,7 @@ const QuizPage = () => {
     const [isCorrectAnswer, setIsCorrectAnswer] = useState(false); // Whether user's answer was correct
     const [wrongAttempts, setWrongAttempts] = useState(0); // Track wrong attempts per question
     const [totalWrongAttempts, setTotalWrongAttempts] = useState(0); // Track total wrong attempts across quiz
+    const [isQuizCompleted, setIsQuizCompleted] = useState(false); // State for final animation
     const [bannerUrl, setBannerUrl] = useState(''); // Event banner URL
 
     useEffect(() => {
@@ -119,8 +121,14 @@ const QuizPage = () => {
                 if (currentQIndex < questions.length - 1) {
                     setCurrentQIndex(prev => prev + 1);
                 } else {
-                    // Pass current accumulated score + points for this last question
-                    finishQuiz(score + points, newCorrect);
+                    // Quiz Completed - Trigger Animation
+                    setRevealedChars(5); // Ensure full reveal visually
+                    setIsQuizCompleted(true);
+
+                    // Navigate after animation delay
+                    setTimeout(() => {
+                        finishQuiz(score + points, newCorrect);
+                    }, 3000);
                 }
             }, 1000);
         } else {
@@ -181,74 +189,96 @@ const QuizPage = () => {
     const currentQ = questions[currentQIndex];
 
     return (
-        <div className="min-h-screen bg-black text-white p-4 flex flex-col items-center">
+        <div className="min-h-screen bg-black text-white p-4 flex flex-col items-center relative overflow-hidden">
+            {isQuizCompleted && <Confetti width={window.innerWidth} height={window.innerHeight} recycle={false} numberOfPieces={500} gravity={0.3} />}
+
             {/* Header / Word Reveal Area */}
-            <div className="w-full max-w-2xl text-center mb-8 mt-4 space-y-4">
-                <h2 className="text-gold tracking-widest text-sm uppercase opacity-70">Decryption in Progress</h2>
+            <motion.div
+                layout
+                animate={isQuizCompleted ? { y: "35vh", scale: 1.8 } : { y: 0, scale: 1 }}
+                transition={{ type: "spring", stiffness: 50, damping: 15 }}
+                className="w-full max-w-2xl text-center mb-8 mt-4 space-y-6 z-20 relative"
+            >
+                <motion.h2
+                    animate={isQuizCompleted ? { color: "#4ADE80", textShadow: "0 0 20px #4ADE80" } : { color: "#FFD700", textShadow: "none" }}
+                    className="tracking-widest text-sm md:text-xl uppercase font-bold"
+                >
+                    {isQuizCompleted ? "⚠ ACCESS GRANTED ⚠" : "Decryption in Progress"}
+                </motion.h2>
                 <div className="flex justify-center gap-2 md:gap-4">
                     {[0, 1, 2, 3, 4].map((i) => (
                         <motion.div
                             key={i}
-                            animate={i < revealedChars ? { scale: [1.2, 1], borderColor: '#FFD700' } : {}}
+                            animate={i < revealedChars ? { scale: [1.2, 1], borderColor: isQuizCompleted ? '#4ADE80' : '#FFD700', backgroundColor: isQuizCompleted ? 'rgba(74, 222, 128, 0.2)' : 'rgba(255, 215, 0, 0.1)', color: isQuizCompleted ? '#4ADE80' : '#FFD700' } : {}}
                             className={`w-12 h-14 md:w-16 md:h-20 border-2 ${i < revealedChars ? 'border-gold bg-gold/10 text-gold' : 'border-white/20 bg-black-soft text-transparent'} rounded-lg flex items-center justify-center text-2xl md:text-4xl font-bold shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-colors duration-500`}
                         >
                             {i < revealedChars ? quizWord[i] : '?'}
                         </motion.div>
                     ))}
                 </div>
-            </div>
+            </motion.div>
 
-            {/* Question Card */}
-            <div className="w-full max-w-2xl flex-1 flex flex-col justify-center">
-                <div className="text-center mb-6">
-                    <span className="text-gray-400 text-sm">Question {currentQIndex + 1} of {questions.length}</span>
-                    <div className="w-full h-1 bg-white/10 mt-2 rounded-full overflow-hidden">
-                        <motion.div
-                            className="h-full bg-gold"
-                            initial={{ width: 0 }}
-                            animate={{ width: `${((currentQIndex) / questions.length) * 100}%` }}
-                        />
-                    </div>
-                </div>
+            {/* Question Card - Hide when completed */}
+            <AnimatePresence>
+                {!isQuizCompleted && (
+                    <motion.div
+                        key="question-card"
+                        initial={{ opacity: 1 }}
+                        exit={{ opacity: 0, y: 100, scale: 0.9 }}
+                        transition={{ duration: 0.5 }}
+                        className="w-full max-w-2xl flex-1 flex flex-col justify-center z-10"
+                    >
+                        <div className="text-center mb-6">
+                            <span className="text-gray-400 text-sm">Question {currentQIndex + 1} of {questions.length}</span>
+                            <div className="w-full h-1 bg-white/10 mt-2 rounded-full overflow-hidden">
+                                <motion.div
+                                    className="h-full bg-gold"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${((currentQIndex) / questions.length) * 100}%` }}
+                                />
+                            </div>
+                        </div>
 
-                <Card className="mb-8">
-                    <h3 className="text-xl md:text-2xl font-bold mb-6 text-center leading-relaxed">
-                        {currentQ.question}
-                    </h3>
+                        <Card className="mb-8">
+                            <h3 className="text-xl md:text-2xl font-bold mb-6 text-center leading-relaxed">
+                                {currentQ.question}
+                            </h3>
 
-                    <div className="grid gap-3">
-                        {[
-                            { key: 'a', val: currentQ.option_a },
-                            { key: 'b', val: currentQ.option_b },
-                            { key: 'c', val: currentQ.option_c },
-                            { key: 'd', val: currentQ.option_d }
-                        ].map((opt) => (
-                            <motion.button
-                                key={opt.key}
-                                onClick={() => handleAnswer(opt.key)}
-                                disabled={showFeedback}
-                                animate={showFeedback && opt.key === selectedAnswer && !isCorrectAnswer ? { x: [0, -10, 10, -10, 10, 0] } : {}}
-                                transition={{ duration: 0.4 }}
-                                className={`w-full text-left py-4 px-6 rounded-lg border-2 transition-all duration-300 ${getButtonStyle(opt.key)} disabled:cursor-not-allowed`}
-                            >
-                                <span className="text-gold mr-4 uppercase font-bold">{opt.key}.</span>
-                                {opt.val}
-                            </motion.button>
-                        ))}
-                    </div>
+                            <div className="grid gap-3">
+                                {[
+                                    { key: 'a', val: currentQ.option_a },
+                                    { key: 'b', val: currentQ.option_b },
+                                    { key: 'c', val: currentQ.option_c },
+                                    { key: 'd', val: currentQ.option_d }
+                                ].map((opt) => (
+                                    <motion.button
+                                        key={opt.key}
+                                        onClick={() => handleAnswer(opt.key)}
+                                        disabled={showFeedback}
+                                        animate={showFeedback && opt.key === selectedAnswer && !isCorrectAnswer ? { x: [0, -10, 10, -10, 10, 0] } : {}}
+                                        transition={{ duration: 0.4 }}
+                                        className={`w-full text-left py-4 px-6 rounded-lg border-2 transition-all duration-300 ${getButtonStyle(opt.key)} disabled:cursor-not-allowed`}
+                                    >
+                                        <span className="text-gold mr-4 uppercase font-bold">{opt.key}.</span>
+                                        {opt.val}
+                                    </motion.button>
+                                ))}
+                            </div>
 
-                    {/* Feedback Message */}
-                    {showFeedback && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className={`mt-4 text-center font-bold ${isCorrectAnswer ? 'text-gold' : 'text-red-400'}`}
-                        >
-                            {isCorrectAnswer ? '✓ Correct! Moving to next question...' : '✗ Wrong! Try again...'}
-                        </motion.div>
-                    )}
-                </Card>
-            </div>
+                            {/* Feedback Message */}
+                            {showFeedback && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className={`mt-4 text-center font-bold ${isCorrectAnswer ? 'text-gold' : 'text-red-400'}`}
+                                >
+                                    {isCorrectAnswer ? '✓ Correct! Moving to next question...' : '✗ Wrong! Try again...'}
+                                </motion.div>
+                            )}
+                        </Card>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
