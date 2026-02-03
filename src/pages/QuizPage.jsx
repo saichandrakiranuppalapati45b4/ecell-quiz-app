@@ -35,6 +35,8 @@ const QuizPage = () => {
     const [selectedAnswer, setSelectedAnswer] = useState(null); // The answer user clicked
     const [showFeedback, setShowFeedback] = useState(false); // Whether to show correct/wrong colors
     const [isCorrectAnswer, setIsCorrectAnswer] = useState(false); // Whether user's answer was correct
+    const [wrongAttempts, setWrongAttempts] = useState(0); // Track wrong attempts per question
+    const [totalWrongAttempts, setTotalWrongAttempts] = useState(0); // Track total wrong attempts across quiz
     const [bannerUrl, setBannerUrl] = useState(''); // Event banner URL
 
     useEffect(() => {
@@ -96,9 +98,12 @@ const QuizPage = () => {
         setIsCorrectAnswer(isCorrect);
 
         if (isCorrect) {
+            // Calculate points: 10 base - (2 for each wrong attempt)
+            const points = Math.max(0, 10 - (wrongAttempts * 2));
+
             const newCorrect = correctCount + 1;
             setCorrectCount(newCorrect);
-            setScore(s => s + 10);
+            setScore(s => s + points);
 
             // Reveal logic: Every 2 correct answers (2, 4, 6, 8, 10) -> Reveal 1 letter
             if (newCorrect % 2 === 0) {
@@ -109,15 +114,21 @@ const QuizPage = () => {
             setTimeout(() => {
                 setSelectedAnswer(null);
                 setShowFeedback(false);
+                setWrongAttempts(0); // Reset for next question
 
                 if (currentQIndex < questions.length - 1) {
                     setCurrentQIndex(prev => prev + 1);
                 } else {
-                    finishQuiz(score + 10, newCorrect);
+                    // Pass current accumulated score + points for this last question
+                    finishQuiz(score + points, newCorrect);
                 }
             }, 1000);
         } else {
-            // Wrong answer - reset after delay but stay on same question
+            // Wrong answer - increment attempts
+            setWrongAttempts(prev => prev + 1);
+            setTotalWrongAttempts(prev => prev + 1);
+
+            // Reset selection after delay but stay on same question
             setTimeout(() => {
                 setSelectedAnswer(null);
                 setShowFeedback(false);
@@ -126,10 +137,14 @@ const QuizPage = () => {
     };
 
     const finishQuiz = async (finalScore, finalCorrect) => {
-        // Save score
+        // Save score and stats
         const participantId = sessionStorage.getItem('participant_id');
         if (participantId) {
-            await supabase.from('participants').update({ score: finalScore }).eq('id', participantId);
+            await supabase.from('participants').update({
+                score: finalScore,
+                questions_solved: finalCorrect,
+                wrong_attempts: totalWrongAttempts
+            }).eq('id', participantId);
         }
         // Navigate to result
         // Pass state

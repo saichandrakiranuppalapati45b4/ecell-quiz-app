@@ -566,7 +566,9 @@ const AdminDashboard = () => {
                                 <thead className="border-b border-gray-200 text-gray-500 bg-gray-50">
                                     <tr>
                                         <th className="p-3">Name</th>
+                                        <th className="p-3">Score</th>
                                         <th className="p-3">Questions Solved</th>
+                                        <th className="p-3">Wrong Attempts</th>
                                         <th className="p-3">Date</th>
                                     </tr>
                                 </thead>
@@ -574,7 +576,9 @@ const AdminDashboard = () => {
                                     {participants.map((p) => (
                                         <tr key={p.id} className="border-b border-gray-100 hover:bg-gray-50">
                                             <td className="p-3 font-medium">{p.name}</td>
-                                            <td className="p-3 text-gold font-bold">{(p.score || 0) / 10} / {questions.length || 10}</td>
+                                            <td className="p-3 font-bold text-black">{p.score || 0}</td>
+                                            <td className="p-3 text-gold font-bold">{p.questions_solved || 0} / {questions.length > 0 ? questions.length : '?'}</td>
+                                            <td className="p-3 text-red-500 font-medium">{p.wrong_attempts || 0}</td>
                                             <td className="p-3 text-sm text-gray-500">{new Date(p.created_at).toLocaleDateString()}</td>
                                         </tr>
                                     ))}

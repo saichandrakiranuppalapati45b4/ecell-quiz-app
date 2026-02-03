@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { motion } from 'framer-motion';
-import { Home } from 'lucide-react';
+import { Home, Trophy } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const ResultPage = () => {
@@ -87,11 +87,13 @@ const ResultPage = () => {
                 </p>
             </div>
 
-            <div className="mb-8 flex gap-4">
-                <Button variant="outline" onClick={() => navigate('/')} className="flex items-center gap-2 px-8 py-3">
+            <div className="mb-8 flex flex-col sm:flex-row gap-4">
+                <Button variant="outline" onClick={() => navigate('/')} className="flex items-center justify-center gap-2 px-8 py-3 w-full sm:w-auto">
                     <Home size={20} /> Back to Home
                 </Button>
-                {/* Removed Poster Download as per request */}
+                <Button variant="outline" onClick={() => navigate('/leaderboard')} className="flex items-center justify-center gap-2 px-8 py-3 w-full sm:w-auto border-gold text-gold hover:bg-gold hover:text-black transition-colors">
+                    <Trophy size={20} /> Leaderboard
+                </Button>
             </div>
         </div>
     );
