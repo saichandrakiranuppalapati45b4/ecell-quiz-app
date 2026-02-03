@@ -195,7 +195,7 @@ const QuizPage = () => {
             {/* Header / Word Reveal Area */}
             <motion.div
                 layout
-                animate={isQuizCompleted ? { y: "35vh", scale: 1.8 } : { y: 0, scale: 1 }}
+                animate={isQuizCompleted ? { y: "35vh", scale: window.innerWidth < 768 ? 1.1 : 1.5 } : { y: 0, scale: 1 }}
                 transition={{ type: "spring", stiffness: 50, damping: 15 }}
                 className="w-full max-w-2xl text-center mb-8 mt-4 space-y-6 z-20 relative"
             >
