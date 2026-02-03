@@ -4,10 +4,12 @@ import QuizPage from './pages/QuizPage';
 import ResultPage from './pages/ResultPage';
 import AdminDashboard from './pages/AdminDashboard';
 import LeaderboardPage from './pages/LeaderboardPage';
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 function App() {
   return (
     <div className="min-h-screen bg-black text-white font-sans selection:bg-gold selection:text-black">
+      <SpeedInsights />
       <Router>
         <Routes>
           <Route path="/" element={<LandingPage />} />
