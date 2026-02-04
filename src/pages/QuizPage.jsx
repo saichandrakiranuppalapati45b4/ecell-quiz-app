@@ -100,12 +100,9 @@ const QuizPage = () => {
         setIsCorrectAnswer(isCorrect);
 
         if (isCorrect) {
-            // Calculate points: 10 base - (2 for each wrong attempt)
-            const points = Math.max(0, 10 - (wrongAttempts * 2));
-
             const newCorrect = correctCount + 1;
             setCorrectCount(newCorrect);
-            setScore(s => s + points);
+            setScore(s => s + 10); // +10 for Correct
 
             // Reveal logic: Every 2 correct answers (2, 4, 6, 8, 10) -> Reveal 1 letter
             if (newCorrect % 2 === 0) {
@@ -127,12 +124,13 @@ const QuizPage = () => {
 
                     // Navigate after animation delay
                     setTimeout(() => {
-                        finishQuiz(score + points, newCorrect);
+                        finishQuiz(score + 10, newCorrect); // Pass current score + 10
                     }, 3000);
                 }
             }, 1000);
         } else {
-            // Wrong answer - increment attempts
+            // Wrong answer
+            setScore(s => s - 2); // -2 for Wrong (Immediate deduction)
             setWrongAttempts(prev => prev + 1);
             setTotalWrongAttempts(prev => prev + 1);
 
